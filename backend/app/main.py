@@ -2,8 +2,10 @@ import json
 import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+import os
 from app.graph import multi_agent_app
 
 app = FastAPI(title="Autonomous Multi-Agent System API")
@@ -18,6 +20,12 @@ app.add_middleware(
 
 class AgentRequest(BaseModel):
     user_goal: str
+
+# Serve index.html directly on root /
+@app.get("/")
+async def read_index():
+    frontend_path = os.path.join(os.path.dirname(__file__), "../../frontend/index.html")
+    return FileResponse(frontend_path)
 
 @app.get("/health")
 def health_check():
@@ -38,7 +46,6 @@ async def event_generator(goal: str):
 
     final_output_text = ""
 
-    # Asynchronous non-blocking streaming
     async for event in multi_agent_app.astream(initial_state):
         for node_name, state_update in event.items():
             payload = {

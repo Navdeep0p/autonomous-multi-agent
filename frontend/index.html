@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Autonomous Multi-Agent Workspace</title>
+  <!-- Markdown & Syntax Highlighting -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  
+  <style>
+    :root {
+      --bg-base: #0c0d12;
+      --bg-surface: #14161f;
+      --bg-surface-elevated: #1a1d29;
+      --border-subtle: #242838;
+      --border-strong: #363c52;
+      --text-primary: #f0f2f7;
+      --text-secondary: #8d95a8;
+      --accent: #3d72fe;
+      --accent-glow: rgba(61, 114, 254, 0.15);
+      --font-main: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+      --font-code: "JetBrains Mono", SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      font-family: var(--font-main);
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* Left Control Sidebar */
+    .sidebar {
+      width: 280px;
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 16px;
+      flex-shrink: 0;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .brand-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #3d72fe, #745df9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #fff;
+    }
+    .brand-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+    }
+    .new-session-btn {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s;
+    }
+    .new-session-btn:hover {
+      border-color: var(--border-strong);
+      background: #202433;
+    }
+    .agent-pipeline-list {
+      margin-top: 28px;
+      flex: 1;
+    }
+    .pipeline-heading {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+    .pipeline-node {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      font-size: 0.82rem;
+      color: #b4bac9;
+      border-radius: 6px;
+      margin-bottom: 4px;
+    }
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #393e50;
+    }
+    .sidebar-meta {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 14px;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Workspace Content */
+    .workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      position: relative;
+    }
+    .workspace-header {
+      height: 56px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      font-size: 0.88rem;
+    }
+    .session-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    /* Feed Container */
+    .viewport {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 0 160px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .feed {
+      width: 100%;
+      max-width: 860px;
+      padding: 0 24px;
+    }
+
+    .turn {
+      margin-bottom: 32px;
+      animation: appear 0.2s ease-out;
+    }
+    @keyframes appear { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .user-turn {
+      display: flex;
+      justify-content: flex-end;
+    }
+    .user-pill {
+      background: #1e2230;
+      border: 1px solid #2e3549;
+      padding: 12px 18px;
+      border-radius: 14px;
+      max-width: 85%;
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    /* Agent Thought Process Container */
+    .reasoning-module {
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+      border-radius: 10px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .reasoning-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      cursor: pointer;
+      user-select: none;
+      background: rgba(255, 255, 255, 0.015);
+      border-bottom: 1px solid transparent;
+    }
+    .reasoning-header.open {
+      border-bottom-color: var(--border-subtle);
+    }
+    .reasoning-header:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .reasoning-state {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.84rem;
+      color: #a0a8ba;
+    }
+    .spinner-ring {
+      width: 13px;
+      height: 13px;
+      border: 2px solid var(--accent);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    .timer-badge {
+      font-family: var(--font-code);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      background: var(--bg-surface-elevated);
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+    .reasoning-body {
+      padding: 14px 18px;
+      font-size: 0.85rem;
+      color: #9299a9;
+      max-height: 320px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+    .step-log {
+      margin-bottom: 12px;
+      padding-left: 10px;
+      border-left: 2px solid #2d3345;
+    }
+    .step-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 1px 6px;
+      border-radius: 3px;
+      margin-right: 6px;
+    }
+    .badge-supervisor { background: #2a3142; color: #d0d7e5; }
+    .badge-researcher { background: #162a4a; color: #8cbcfc; }
+    .badge-coder { background: #133a2a; color: #7de0a7; }
+    .badge-reviewer { background: #3d2c14; color: #f5cf82; }
+
+    /* Final Output Area */
+    .artifact-body {
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: var(--text-primary);
+    }
+    .artifact-body p { margin-bottom: 12px; }
+    .artifact-body ul, .artifact-body ol { margin: 0 0 14px 22px; }
+    .artifact-body pre {
+      background: #08090d;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 14px;
+      margin: 14px 0;
+      overflow-x: auto;
+    }
+    .artifact-body code { font-family: var(--font-code); font-size: 0.85rem; }
+
+    /* Bottom Input Dock */
+    .input-dock {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(180deg, transparent 0%, var(--bg-base) 40%);
+      padding: 0 24px 24px;
+      display: flex;
+      justify-content: center;
+    }
+    .input-chassis {
+      width: 100%;
+      max-width: 860px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 14px;
+      padding: 12px 14px 10px 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-chassis:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 10px 35px var(--accent-glow);
+    }
+    textarea#user-prompt {
+      width: 100%;
+      height: 40px;
+      max-height: 140px;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.92rem;
+      resize: none;
+      line-height: 1.5;
+    }
+    .dock-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 6px;
+    }
+    .mode-indicator {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .run-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--accent);
+      border: none;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .run-btn:disabled {
+      background: #252a38;
+      color: #555e73;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Left Sidebar -->
+  <div class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">M</div>
+      <div class="brand-title">Agent Workspace</div>
+    </div>
+    
+    <button class="new-session-btn" onclick="clearSession()">
+      <span>New Objective</span>
+      <span style="font-size: 0.75rem; color: var(--text-secondary);">⌘N</span>
+    </button>
+
+    <div class="agent-pipeline-list">
+      <div class="pipeline-heading">Active Pipeline Nodes</div>
+      <div class="pipeline-node"><span class="status-dot"></span> Supervisor (Planner)</div>
+      <div class="pipeline-node"><span class="status-dot"></span> Researcher (Live Search)</div>
+      <div class="pipeline-node"><span class="status-dot"></span> Coder (Python Sandbox)</div>
+      <div class="pipeline-node"><span class="status-dot"></span> Critic (Reflection QA)</div>
+    </div>
+
+    <div class="sidebar-meta">
+      <span>LangGraph + Gemini</span>
+      <span>v1.2</span>
+    </div>
+  </div>
+
+  <!-- Workspace Arena -->
+  <div class="workspace">
+    <div class="workspace-header">
+      <div class="session-indicator">
+        <span style="width: 6px; height: 6px; border-radius: 50%; background: #22c55e;"></span>
+        Local Runtime Active
+      </div>
+    </div>
+
+    <div class="viewport" id="scroll-area">
+      <div class="feed" id="chat-feed">
+        <div class="turn">
+          <div class="artifact-body">
+            <p style="color: var(--text-secondary);">Autonomous pipeline initialized. Formulate a multi-step objective requiring web research or computed verification below.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Command Input -->
+    <div class="input-dock">
+      <div class="input-chassis">
+        <textarea id="user-prompt" placeholder="Describe the goal or question..." rows="1" oninput="autoResize(this)" onkeydown="checkSubmit(event)">Find the latest stock price and market capitalization of Apple (AAPL), and write Python code to calculate how many shares someone could buy with $25,000 and the remaining cash balance.</textarea>
+        <div class="dock-actions">
+          <div class="mode-indicator">
+            <span>Graph Iterations: Auto-Route</span>
+          </div>
+          <button id="submit-btn" class="run-btn" onclick="executeGraph()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    marked.setOptions({
+      highlight: function(code, lang) {
+        if (lang && hljs.getLanguage(lang)) {
+          return hljs.highlight(code, { language: lang }).value;
+        }
+        return hljs.highlightAuto(code).value;
+      }
+    });
+
+    function autoResize(textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 140) + 'px';
+    }
+
+    function checkSubmit(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        executeGraph();
+      }
+    }
+
+    function clearSession() {
+      document.getElementById('chat-feed').innerHTML = `
+        <div class="turn">
+          <div class="artifact-body">
+            <p style="color: var(--text-secondary);">Autonomous pipeline initialized. Formulate an objective below.</p>
+          </div>
+        </div>
+      `;
+    }
+
+    async function executeGraph() {
+      const input = document.getElementById("user-prompt");
+      const btn = document.getElementById("submit-btn");
+      const feed = document.getElementById("chat-feed");
+      const scrollArea = document.getElementById("scroll-area");
+      const goal = input.value.trim();
+
+      if (!goal) return;
+
+      // 1. User Turn
+      feed.innerHTML += `
+        <div class="turn user-turn">
+          <div class="user-pill">${goal}</div>
+        </div>
+      `;
+
+      input.value = "";
+      input.style.height = "40px";
+      btn.disabled = true;
+      scrollArea.scrollTop = scrollArea.scrollHeight;
+
+      // 2. Assistant Turn with Reasoning Dropdown
+      const turnId = Date.now();
+      const reasoningBoxId = `reasoning-${turnId}`;
+      const headerId = `header-${turnId}`;
+      const bodyId = `body-${turnId}`;
+      const timerId = `timer-${turnId}`;
+      const artifactId = `artifact-${turnId}`;
+
+      feed.innerHTML += `
+        <div class="turn">
+          <div class="reasoning-module" id="${reasoningBoxId}">
+            <div class="reasoning-header open" id="${headerId}" onclick="toggleDropdown('${bodyId}', '${headerId}')">
+              <div class="reasoning-state">
+                <div class="spinner-ring" id="spin-${turnId}"></div>
+                <span id="label-${turnId}">Reasoning & Routing Workflow</span>
+              </div>
+              <span class="timer-badge" id="${timerId}">0.0s</span>
+            </div>
+            <div class="reasoning-body" id="${bodyId}"></div>
+          </div>
+          <div class="artifact-body" id="${artifactId}"></div>
+        </div>
+      `;
+
+      scrollArea.scrollTop = scrollArea.scrollHeight;
+
+      const startTime = performance.now();
+      const timer = setInterval(() => {
+        const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+        const el = document.getElementById(timerId);
+        if (el) el.innerText = elapsed + "s";
+      }, 100);
+
+      const bodyEl = document.getElementById(bodyId);
+      const artifactEl = document.getElementById(artifactId);
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/run-stream", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_goal: goal })
+        });
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let buffer = "";
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n\n");
+          buffer = lines.pop();
+
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              const data = JSON.parse(line.replace("data: ", ""));
+              
+              if (data.node === "COMPLETE") {
+                clearInterval(timer);
+                document.getElementById(`spin-${turnId}`).style.display = "none";
+                document.getElementById(`label-${turnId}`).innerText = "Workflow Executed & Audited";
+                
+                if (data.final_output) {
+                  artifactEl.innerHTML = marked.parse(data.final_output);
+                }
+                btn.disabled = false;
+                scrollArea.scrollTop = scrollArea.scrollHeight;
+                return;
+              }
+
+              appendStepLog(data, bodyEl);
+              scrollArea.scrollTop = scrollArea.scrollHeight;
+            }
+          }
+        }
+      } catch (err) {
+        clearInterval(timer);
+        artifactEl.innerHTML = `<p style="color: #f87171;">Connection error: ${err.message}</p>`;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function toggleDropdown(bodyId, headerId) {
+      const b = document.getElementById(bodyId);
+      const h = document.getElementById(headerId);
+      if (b.style.display === "none") {
+        b.style.display = "block";
+        h.classList.add("open");
+      } else {
+        b.style.display = "none";
+        h.classList.remove("open");
+      }
+    }
+
+    function appendStepLog(data, container) {
+      const step = document.createElement("div");
+      step.className = "step-log";
+      const node = data.node || "supervisor";
+      let log = `<span class="step-badge badge-${node.toLowerCase()}">${node.toUpperCase()}</span> `;
+
+      if (data.plan) log += `Planner updated graph strategy (${data.plan.length} stages).<br>`;
+      if (data.next_step) log += `Transferred execution to: <code>${data.next_step}</code><br>`;
+      if (data.research_snippet) log += `Retrieved factual web findings.<br>`;
+      if (data.code_output) log += `Sandbox executed calculation successfully.<br>`;
+      if (data.review_feedback) log += `Critic audit: <em>${data.review_feedback}</em>`;
+
+      step.innerHTML = log;
+      container.appendChild(step);
+    }
+  </script>
+</body>
+</html>

@@ -1,10 +1,11 @@
 langgraph
+langchain
 langchain-core
-langchain-community
 langchain-google-genai
-duckduckgo-search
-pydantic
-python-dotenv
 fastapi
 uvicorn
+aiofiles
+pydantic
+python-dotenv
 ddgs
+requests
