@@ -1,18 +1,18 @@
 ```markdown
 # Autonomous Multi-Agent Engineering System
 
-An autonomous, state-driven multi-agent system implemented using **LangGraph**, **Google Gemini API**, an isolated **Python Subprocess Sandbox**, and **DuckDuckGo Web Search**.
+An autonomous, state-driven multi-agent system implemented using **LangGraph**, **Google Gemini API**, an isolated **Python Subprocess Sandbox**, and **DuckDuckGo Web Search**[cite: 2].
 
 ---
 
 ## Core Capabilities
 
-* **State Machine Orchestration:** Employs LangGraph for cycle management, shared memory state transitions, and deterministic graph routing.
-* **Hierarchical Supervisor:** Decomposes user objectives and coordinates sub-tasks dynamically between worker agents.
-* **Live Web Intelligence:** Researcher agent queries live web sources to extract factual context and documentation.
-* **Isolated Code Sandbox:** Coder agent executes dynamic Python scripts within an isolated runtime environment to compute and verify logic.
-* **Self-Healing Review Loop:** Reviewer agent audits generated artifacts against defined constraints, triggering re-routing loops upon failure.
-* **Real-Time Streaming:** Exposes intermediate graph execution states over Server-Sent Events (FastAPI) and an interactive Streamlit UI.
+* **State Machine Orchestration:** Uses LangGraph for cyclical state transitions, shared memory, and deterministic graph routing[cite: 2].
+* **Hierarchical Supervisor:** Decomposes complex objectives into subtasks and coordinates worker agents dynamically[cite: 2].
+* **Live Web Intelligence:** Researcher agent queries live web sources to extract factual context and documentation[cite: 2].
+* **Isolated Code Sandbox:** Coder agent executes dynamic Python scripts within an isolated subprocess runtime to compute and verify logic[cite: 2].
+* **Self-Healing Review Loop:** Reviewer agent audits generated artifacts against defined constraints, triggering re-routing loops upon failure[cite: 2].
+* **Unified Web Interface & SSE Streaming:** Real-time event streaming powered by FastAPI (Server-Sent Events) and a single-page dark workspace UI[cite: 1, 2].
 
 ---
 
@@ -55,37 +55,36 @@ autonomous-multi-agent/
 ├── backend/
 │   ├── app/
 │   │   ├── agents/
-│   │   │   ├── supervisor.py     # Task decomposition & routing
-│   │   │   ├── researcher.py     # Web search & summarization
-│   │   │   ├── coder.py          # Sandbox code execution
-│   │   │   └── reviewer.py       # Quality auditing & reflection
+│   │   │   ├── coder.py          # Sandbox code generation
+│   │   │   ├── researcher.py     # Web search & query formulation
+│   │   │   ├── reviewer.py       # Quality auditing & reflection
+│   │   │   └── supervisor.py     # Task decomposition & routing
 │   │   ├── core/
 │   │   │   ├── config.py         # Environment & model configurations
 │   │   │   └── state.py          # TypedDict shared graph schema
 │   │   ├── tools/
-│   │   │   ├── search.py         # Search integration wrapper
-│   │   │   └── sandbox.py        # Isolated execution runtime
+│   │   │   ├── sandbox.py        # Subprocess execution runtime
+│   │   │   └── search.py         # DuckDuckGo search tool wrapper
 │   │   ├── graph.py              # LangGraph compilation & edge routing
-│   │   └── main.py               # FastAPI SSE streaming server
-│   ├── requirements.txt
-│   └── run_cli.py                # Command-line interface runner
+│   │   └── main.py               # FastAPI server & static file host
+│   ├── requirements.txt          # Python dependencies
+│   ├── run_cli.py                # Command-line interface runner
+│   └── test_connection.py        # Connectivity verification script
 ├── frontend/
-│   └── app.py                    # Streamlit real-time dashboard
+│   └── index.html                # Single-page workspace UI
+├── .gitignore
 └── README.md
-
-```
+```[cite: 2]
 
 ---
 
 ## Getting Started
 
 ### 1. Prerequisites
-
 * Python 3.10 or higher
 * Google AI Studio API Key
 
-### 2. Installation & Environment Setup
-
+### 2. Installation & Setup
 ```bash
 # Clone the repository
 git clone [https://github.com/Navdeep0p/autonomous-multi-agent.git](https://github.com/Navdeep0p/autonomous-multi-agent.git)
@@ -93,17 +92,14 @@ cd autonomous-multi-agent
 
 # Create and activate virtual environment
 python3 -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r backend/requirements.txt
-
-```
+```[cite: 2]
 
 ### 3. Environment Configuration
-
-Create a `.env` file inside `backend/`:
-
+Create a `.env` file inside `backend/`[cite: 2]:
 ```ini
 GEMINI_API_KEY=your_gemini_api_key_here
 
@@ -111,37 +107,40 @@ GEMINI_API_KEY=your_gemini_api_key_here
 
 ### 4. Running the System
 
-**Option A: Command-Line Interface (CLI)**
+**Option A: Web Workspace (Recommended)**
 
 ```bash
-python backend/run_cli.py
-
-```
-
-**Option B: Web Dashboard (FastAPI + Streamlit)**
-
-```bash
-# Terminal 1: Start API server
 cd backend
 uvicorn app.main:app --reload --port 8000
 
-# Terminal 2: Launch frontend
-streamlit run frontend/app.py
-
 ```
+
+Open `http://127.0.0.1:8000` in your browser to access the interface.
+
+**Option B: Command-Line Interface (CLI)**
+
+```bash
+cd backend
+python run_cli.py
+```[cite: 2]
 
 ---
 
 ## Technical Specifications
 
 | Component | Implementation | Purpose |
-| --- | --- | --- |
-| **Orchestration** | LangGraph (StateGraph) | Cyclic graph state execution & routing |
-| **Reasoning Engine** | Google Gemini Flash | Structured JSON output & planning |
-| **Web Retrieval** | DuckDuckGo (`ddgs`) | Real-time information gathering |
-| **Execution Sandbox** | Python Subprocess API | Isolated code computation & verification |
-| **API & Streaming** | FastAPI (SSE) | Non-blocking real-time event streaming |
-| **User Interface** | Streamlit | Step-by-step agent tracking interface |
+| :--- | :--- | :--- |
+| **Orchestration** | LangGraph (`StateGraph`) | Cyclic graph state execution & routing[cite: 2] |
+| **Reasoning Engine** | Google Gemini Flash | Planning, summarization, and code synthesis[cite: 2] |
+| **Web Retrieval** | DuckDuckGo (`ddgs`) | Real-time information extraction[cite: 2] |
+| **Execution Sandbox** | Python `subprocess` | Isolated code computation & numerical verification[cite: 2] |
+| **API & Streaming** | FastAPI + Server-Sent Events | Non-blocking telemetry and token streaming[cite: 2] |
+| **User Interface** | HTML5 / CSS3 / JavaScript | Single-page workspace with reasoning logs & syntax highlighting[cite: 1, 2] |
 
 ---
 
+## License
+
+Distributed under the MIT License. See `LICENSE` for details.
+
+```
