@@ -36,19 +36,19 @@
 
     /* Left Control Sidebar */
     .sidebar {
-      width: 280px;
+      width: 290px;
       background: var(--bg-surface);
       border-right: 1px solid var(--border-subtle);
       display: flex;
       flex-direction: column;
-      padding: 20px 16px;
+      padding: 18px 14px;
       flex-shrink: 0;
+      gap: 16px;
     }
     .brand {
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: 24px;
     }
     .brand-icon {
       width: 28px;
@@ -86,27 +86,93 @@
       border-color: var(--border-strong);
       background: #202433;
     }
-    .agent-pipeline-list {
-      margin-top: 28px;
+
+    /* Thread History Section */
+    .threads-section {
       flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
-    .pipeline-heading {
+    .section-heading {
       font-size: 0.72rem;
       text-transform: uppercase;
       letter-spacing: 0.8px;
       color: var(--text-secondary);
-      margin-bottom: 12px;
+      margin-bottom: 8px;
+    }
+    .threads-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding-right: 4px;
+    }
+    .thread-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+    }
+    .thread-item:hover {
+      background: var(--bg-surface-elevated);
+      color: var(--text-primary);
+    }
+    .thread-item.active {
+      background: rgba(61, 114, 254, 0.12);
+      border-color: rgba(61, 114, 254, 0.4);
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+    .thread-title {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 190px;
+    }
+    .thread-del-btn {
+      opacity: 0;
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 2px 4px;
+      font-size: 0.75rem;
+    }
+    .thread-item:hover .thread-del-btn {
+      opacity: 1;
+    }
+    .thread-del-btn:hover {
+      color: #f87171;
+    }
+
+    /* Pipeline Status List */
+    .agent-pipeline-list {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 14px;
     }
     .pipeline-node {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 8px 10px;
-      font-size: 0.82rem;
+      justify-content: space-between;
+      padding: 6px 8px;
+      font-size: 0.8rem;
       color: #b4bac9;
       border-radius: 6px;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       transition: all 0.2s;
+    }
+    .node-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .status-dot {
       width: 6px;
@@ -116,7 +182,6 @@
       transition: all 0.2s;
     }
     
-    /* Active Node Highlight Styling */
     .pipeline-node.active {
       color: #f0f2f7;
       font-weight: 600;
@@ -127,10 +192,36 @@
       box-shadow: 0 0 8px #3d72fe;
     }
 
+    /* Engine Model Tag Badges */
+    .engine-tag {
+      font-size: 0.68rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      text-transform: uppercase;
+    }
+    .engine-tag.ollama {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(52, 211, 153, 0.4);
+    }
+    .engine-tag.gemini {
+      background: rgba(61, 114, 254, 0.15);
+      color: #93c5fd;
+      border: 1px solid rgba(147, 197, 253, 0.4);
+    }
+    .engine-tag.chromadb {
+      background: rgba(168, 85, 247, 0.15);
+      color: #c084fc;
+      border: 1px solid rgba(192, 132, 252, 0.4);
+    }
+
     .sidebar-meta {
       border-top: 1px solid var(--border-subtle);
-      padding-top: 14px;
-      font-size: 0.75rem;
+      padding-top: 10px;
+      font-size: 0.72rem;
       color: var(--text-secondary);
       display: flex;
       justify-content: space-between;
@@ -145,7 +236,7 @@
       position: relative;
     }
     .workspace-header {
-      height: 56px;
+      height: 52px;
       border-bottom: 1px solid var(--border-subtle);
       display: flex;
       align-items: center;
@@ -169,7 +260,7 @@
     .viewport {
       flex: 1;
       overflow-y: auto;
-      padding: 24px 0 240px !important; /* Increased padding to clear input dock */
+      padding: 24px 0 240px !important;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -200,7 +291,7 @@
       line-height: 1.5;
     }
 
-    /* Agent Thought Process Container */
+    /* Agent Reasoning Container */
     .reasoning-module {
       border: 1px solid var(--border-subtle);
       background: var(--bg-surface);
@@ -271,6 +362,7 @@
       margin-right: 6px;
     }
     .badge-supervisor { background: #2a3142; color: #d0d7e5; }
+    .badge-retriever { background: #2d1845; color: #c084fc; }
     .badge-researcher { background: #162a4a; color: #8cbcfc; }
     .badge-coder { background: #133a2a; color: #7de0a7; }
     .badge-reviewer { background: #3d2c14; color: #f5cf82; }
@@ -284,7 +376,6 @@
     .artifact-body p { margin-bottom: 12px; }
     .artifact-body ul, .artifact-body ol { margin: 0 0 14px 22px; }
     
-    /* Code Blocks and Copy Buttons */
     .code-wrapper {
       position: relative;
       margin: 14px 0;
@@ -396,21 +487,49 @@
       <div class="brand-title">Agent Workspace</div>
     </div>
     
-    <button class="new-session-btn" onclick="clearSession()">
+    <button class="new-session-btn" onclick="createNewSession()">
       <span>New Objective</span>
       <span style="font-size: 0.75rem; color: var(--text-secondary);">⌘N</span>
     </button>
 
+    <!-- Chat Threads History List -->
+    <div class="threads-section">
+      <div class="section-heading">Recent Sessions</div>
+      <div class="threads-list" id="threads-container"></div>
+    </div>
+
+    <!-- Active Agents Status with Engine Badges -->
     <div class="agent-pipeline-list">
-      <div class="pipeline-heading">Active Pipeline Nodes</div>
-      <div class="pipeline-node"><span class="status-dot"></span> Supervisor (Planner)</div>
-      <div class="pipeline-node"><span class="status-dot"></span> Researcher (Live Search)</div>
-      <div class="pipeline-node"><span class="status-dot"></span> Coder (Python Sandbox)</div>
-      <div class="pipeline-node"><span class="status-dot"></span> Critic (Reflection QA)</div>
+      <div class="section-heading">Active Pipeline Nodes</div>
+      
+      <div class="pipeline-node" id="node-supervisor">
+        <div class="node-label"><span class="status-dot"></span> Supervisor</div>
+        <span class="engine-tag ollama" id="badge-supervisor">OLLAMA</span>
+      </div>
+
+      <div class="pipeline-node" id="node-retriever">
+        <div class="node-label"><span class="status-dot"></span> Retriever</div>
+        <span class="engine-tag chromadb" id="badge-retriever">VECTOR DB</span>
+      </div>
+
+      <div class="pipeline-node" id="node-researcher">
+        <div class="node-label"><span class="status-dot"></span> Researcher</div>
+        <span class="engine-tag gemini" id="badge-researcher">GEMINI API</span>
+      </div>
+
+      <div class="pipeline-node" id="node-coder">
+        <div class="node-label"><span class="status-dot"></span> Coder</div>
+        <span class="engine-tag ollama" id="badge-coder">OLLAMA</span>
+      </div>
+
+      <div class="pipeline-node" id="node-reviewer">
+        <div class="node-label"><span class="status-dot"></span> Critic</div>
+        <span class="engine-tag gemini" id="badge-reviewer">GEMINI API</span>
+      </div>
     </div>
 
     <div class="sidebar-meta">
-      <span>LangGraph + Gemini</span>
+      <span id="footer-engine-label">Tiered CRAG</span>
       <span>v1.2</span>
     </div>
   </div>
@@ -418,20 +537,14 @@
   <!-- Workspace Arena -->
   <div class="workspace">
     <div class="workspace-header">
-      <div class="session-indicator">
+      <div class="session-indicator" id="header-status-indicator">
         <span style="width: 6px; height: 6px; border-radius: 50%; background: #22c55e;"></span>
-        Local Runtime Active
+        <span id="header-runtime-text">Local Runtime Active</span>
       </div>
     </div>
 
     <div class="viewport" id="scroll-area">
-      <div class="feed" id="chat-feed">
-        <div class="turn">
-          <div class="artifact-body">
-            <p style="color: var(--text-secondary);">Autonomous pipeline initialized. Formulate a multi-step objective requiring web research or computed verification below.</p>
-          </div>
-        </div>
-      </div>
+      <div class="feed" id="chat-feed"></div>
     </div>
 
     <!-- Floating Command Input -->
@@ -443,7 +556,7 @@
             <span>Graph Iterations: Auto-Route</span>
           </div>
           <button id="submit-btn" class="run-btn" onclick="executeGraph()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <svg width="14" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </button>
         </div>
       </div>
@@ -451,7 +564,9 @@
   </div>
 
   <script>
-    // Initialize Markdown syntax highlighting
+    let sessions = JSON.parse(localStorage.getItem('agent_sessions') || '{}');
+    let currentThreadId = localStorage.getItem('agent_current_thread') || null;
+
     marked.setOptions({
       highlight: function(code, lang) {
         if (lang && hljs.getLanguage(lang)) {
@@ -461,27 +576,176 @@
       }
     });
 
-    // 1. Global Keyboard Shortcut (Cmd/Ctrl + N for New Objective)
+    async function loadRuntimeConfig() {
+      try {
+        const res = await fetch('/api/config');
+        const config = await res.json();
+
+        // Supervisor Node
+        const sBadge = document.getElementById('badge-supervisor');
+        sBadge.innerText = config.nodes.supervisor.engine === 'Ollama' ? 'OLLAMA' : 'GEMINI API';
+        sBadge.className = `engine-tag ${config.nodes.supervisor.engine.toLowerCase()}`;
+
+        // Retriever Node
+        const rtrvBadge = document.getElementById('badge-retriever');
+        rtrvBadge.innerText = 'VECTOR DB';
+        rtrvBadge.className = 'engine-tag chromadb';
+
+        // Researcher Node
+        const rBadge = document.getElementById('badge-researcher');
+        rBadge.innerText = 'GEMINI API';
+        rBadge.className = 'engine-tag gemini';
+
+        // Coder Node
+        const cBadge = document.getElementById('badge-coder');
+        cBadge.innerText = config.nodes.coder.engine === 'Ollama' ? 'OLLAMA' : 'GEMINI API';
+        cBadge.className = `engine-tag ${config.nodes.coder.engine.toLowerCase()}`;
+
+        // Reviewer Node
+        const revBadge = document.getElementById('badge-reviewer');
+        revBadge.innerText = 'GEMINI API';
+        revBadge.className = 'engine-tag gemini';
+
+        // Header & Footer Labels
+        const footerLabel = document.getElementById('footer-engine-label');
+        footerLabel.innerText = config.use_local ? `Tiered: Ollama + Gemini` : `Cloud: Gemini API`;
+
+        const headerRuntime = document.getElementById('header-runtime-text');
+        headerRuntime.innerText = config.use_local 
+          ? `Ollama (${config.ollama_model}) + ${config.gemini_model}` 
+          : `Gemini (${config.gemini_model})`;
+      } catch (e) {
+        console.warn('Could not load /api/config', e);
+      }
+    }
+
     window.addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'n') {
         e.preventDefault();
-        clearSession();
-        document.getElementById('user-prompt').focus();
+        createNewSession();
       }
     });
 
-    // 2. Active Sidebar Node Highlighter
+    function saveSessions() {
+      localStorage.setItem('agent_sessions', JSON.stringify(sessions));
+      localStorage.setItem('agent_current_thread', currentThreadId);
+    }
+
+    function renderThreadsList() {
+      const container = document.getElementById('threads-container');
+      container.innerHTML = '';
+
+      const threadKeys = Object.keys(sessions).reverse();
+      if (threadKeys.length === 0) {
+        container.innerHTML = `<span style="font-size: 0.78rem; color: var(--text-secondary); padding: 4px;">No past sessions</span>`;
+        return;
+      }
+
+      threadKeys.forEach(id => {
+        const item = document.createElement('div');
+        item.className = `thread-item ${id === currentThreadId ? 'active' : ''}`;
+        item.onclick = () => switchSession(id);
+
+        item.innerHTML = `
+          <span class="thread-title">${sessions[id].title || 'Untitled Session'}</span>
+          <button class="thread-del-btn" onclick="deleteSession(event, '${id}')">✕</button>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function switchSession(threadId) {
+      currentThreadId = threadId;
+      saveSessions();
+      renderThreadsList();
+      renderFeedForThread(threadId);
+    }
+
+    function createNewSession() {
+      currentThreadId = `session-${Math.random().toString(36).substring(2, 9)}`;
+      sessions[currentThreadId] = {
+        title: 'New Session',
+        turns: []
+      };
+      saveSessions();
+      renderThreadsList();
+      renderFeedForThread(currentThreadId);
+      document.getElementById('user-prompt').focus();
+    }
+
+    function deleteSession(e, threadId) {
+      e.stopPropagation();
+      delete sessions[threadId];
+      if (currentThreadId === threadId) {
+        const remaining = Object.keys(sessions);
+        currentThreadId = remaining.length > 0 ? remaining[remaining.length - 1] : null;
+      }
+      saveSessions();
+      renderThreadsList();
+      if (currentThreadId) {
+        renderFeedForThread(currentThreadId);
+      } else {
+        createNewSession();
+      }
+    }
+
+    function renderFeedForThread(threadId) {
+      const feed = document.getElementById('chat-feed');
+      feed.innerHTML = '';
+      setActiveNode('');
+
+      const session = sessions[threadId];
+      if (!session || !session.turns || session.turns.length === 0) {
+        feed.innerHTML = `
+          <div class="turn">
+            <div class="artifact-body">
+              <p style="color: var(--text-secondary);">Autonomous pipeline initialized. Formulate an objective requiring internal RAG, web research, or computed verification below.</p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      session.turns.forEach((turn, idx) => {
+        if (turn.type === 'user') {
+          feed.innerHTML += `
+            <div class="turn user-turn">
+              <div class="user-pill">${turn.content}</div>
+            </div>
+          `;
+        } else if (turn.type === 'assistant') {
+          const bodyId = `hist-body-${idx}`;
+          const headerId = `hist-head-${idx}`;
+          feed.innerHTML += `
+            <div class="turn">
+              <div class="reasoning-module">
+                <div class="reasoning-header" id="${headerId}" onclick="toggleDropdown('${bodyId}', '${headerId}')">
+                  <div class="reasoning-state">
+                    <span>✓ Execution Logs</span>
+                  </div>
+                  <span class="timer-badge">Completed</span>
+                </div>
+                <div class="reasoning-body" id="${bodyId}" style="display: none;">${turn.reasoningHtml || ''}</div>
+              </div>
+              <div class="artifact-body">${marked.parse(turn.content || '')}</div>
+            </div>
+          `;
+        }
+      });
+
+      enhanceCodeBlocks(feed);
+      const scrollArea = document.getElementById("scroll-area");
+      scrollArea.scrollTop = scrollArea.scrollHeight;
+    }
+
     function setActiveNode(nodeName) {
       document.querySelectorAll('.pipeline-node').forEach(el => el.classList.remove('active'));
-      if (!nodeName) return; // Clear all if empty
+      if (!nodeName) return;
       
-      const target = Array.from(document.querySelectorAll('.pipeline-node')).find(el => 
-        el.innerText.toLowerCase().includes(nodeName.toLowerCase())
-      );
+      const target = document.getElementById(`node-${nodeName.toLowerCase()}`);
       if (target) target.classList.add('active');
     }
 
-    // 3. Attach Copy Buttons to Generated Code Blocks
     function enhanceCodeBlocks(container) {
       container.querySelectorAll('pre').forEach(pre => {
         if (pre.parentElement.classList.contains('code-wrapper')) return;
@@ -515,18 +779,6 @@
       }
     }
 
-    function clearSession() {
-      document.getElementById('chat-feed').innerHTML = `
-        <div class="turn">
-          <div class="artifact-body">
-            <p style="color: var(--text-secondary);">Autonomous pipeline initialized. Formulate an objective below.</p>
-          </div>
-        </div>
-      `;
-      document.getElementById('user-prompt').value = "";
-      setActiveNode(''); // Clear sidebar pulse
-    }
-
     async function executeGraph() {
       const input = document.getElementById("user-prompt");
       const btn = document.getElementById("submit-btn");
@@ -536,7 +788,18 @@
 
       if (!goal) return;
 
-      // User Turn rendering
+      if (!currentThreadId || !sessions[currentThreadId]) {
+        createNewSession();
+      }
+
+      if (sessions[currentThreadId].turns.length === 0) {
+        sessions[currentThreadId].title = goal.length > 25 ? goal.substring(0, 25) + '...' : goal;
+        renderThreadsList();
+      }
+
+      sessions[currentThreadId].turns.push({ type: 'user', content: goal });
+      saveSessions();
+
       feed.innerHTML += `
         <div class="turn user-turn">
           <div class="user-pill">${goal}</div>
@@ -548,7 +811,6 @@
       btn.disabled = true;
       scrollArea.scrollTop = scrollArea.scrollHeight;
 
-      // Assistant Turn with Reasoning Dropdown
       const turnId = Date.now();
       const reasoningBoxId = `reasoning-${turnId}`;
       const headerId = `header-${turnId}`;
@@ -585,10 +847,13 @@
       const artifactEl = document.getElementById(artifactId);
 
       try {
-        const response = await fetch("http://127.0.0.1:8000/run-stream", {
+        const response = await fetch("/run-stream", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_goal: goal })
+          body: JSON.stringify({ 
+            user_goal: goal,
+            thread_id: currentThreadId 
+          })
         });
 
         const reader = response.body.getReader();
@@ -613,30 +878,30 @@
                 const label = document.getElementById(`label-${turnId}`);
                 label.innerText = `✓ Reasoning completed in ${document.getElementById(timerId).innerText}`;
                 
-                // 4. Auto-collapse reasoning on completion
                 const hEl = document.getElementById(headerId);
-                const bEl = document.getElementById(bodyId);
-                if (hEl.classList.contains("open")) {
-                    toggleDropdown(bodyId, headerId);
+                if (hEl && hEl.classList.contains("open")) {
+                  toggleDropdown(bodyId, headerId);
                 }
                 
-                // Clear active node
                 setActiveNode('');
 
                 if (data.final_output) {
                   artifactEl.innerHTML = marked.parse(data.final_output);
-                  // 5. Enhance code blocks with Copy button
                   enhanceCodeBlocks(artifactEl);
+
+                  sessions[currentThreadId].turns.push({
+                    type: 'assistant',
+                    content: data.final_output,
+                    reasoningHtml: bodyEl.innerHTML
+                  });
+                  saveSessions();
                 }
                 btn.disabled = false;
                 scrollArea.scrollTop = scrollArea.scrollHeight;
                 return;
               }
 
-              // Update Sidebar Pulse
               setActiveNode(data.node || 'supervisor');
-              
-              // Append to reasoning logs
               appendStepLog(data, bodyEl);
               scrollArea.scrollTop = scrollArea.scrollHeight;
             }
@@ -664,19 +929,30 @@
     }
 
     function appendStepLog(data, container) {
+      if (data.node === 'INIT') return;
       const step = document.createElement("div");
       step.className = "step-log";
       const node = data.node || "supervisor";
-      let log = `<span class="step-badge badge-${node.toLowerCase()}">${node.toUpperCase()}</span> `;
+      const engineTag = data.engine ? `<span class="engine-tag ${data.engine.toLowerCase()}">${data.engine}</span> ` : '';
+      let log = `<span class="step-badge badge-${node.toLowerCase()}">${node.toUpperCase()}</span> ${engineTag}`;
 
       if (data.plan) log += `Planner updated graph strategy (${data.plan.length} stages).<br>`;
       if (data.next_step) log += `Transferred execution to: <code>${data.next_step}</code><br>`;
+      if (data.retrieval_grade) log += `Vector DB evaluated retrieval grade: <b>${data.retrieval_grade}</b> (${data.documents ? data.documents.length : 0} chunks).<br>`;
       if (data.research_snippet) log += `Retrieved factual web findings.<br>`;
       if (data.code_output) log += `Sandbox executed calculation successfully.<br>`;
       if (data.review_feedback) log += `Critic audit: <em>${data.review_feedback}</em>`;
 
       step.innerHTML = log;
       container.appendChild(step);
+    }
+
+    loadRuntimeConfig();
+    if (!currentThreadId || !sessions[currentThreadId]) {
+      createNewSession();
+    } else {
+      renderThreadsList();
+      renderFeedForThread(currentThreadId);
     }
   </script>
 </body>

@@ -1,27 +1,33 @@
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.messages import HumanMessage
-from app.core.config import GEMINI_API_KEY, DEFAULT_MODEL, DEFAULT_TEMPERATURE
+from langchain_core.messages import SystemMessage, HumanMessage
+from app.core.config import get_agent_llm
 from app.core.state import AgentState
 from app.tools.sandbox import python_executor
 
 def coder_node(state: AgentState) -> dict:
-    llm = ChatGoogleGenerativeAI(
-        model=DEFAULT_MODEL,
-        google_api_key=GEMINI_API_KEY,
-        temperature=0.1,
-        max_output_tokens=350
+    # Uses Ollama locally if USE_LOCAL_FOR_INTERNAL=true, else rotates Gemini keys
+    llm = get_agent_llm("coder", temperature=0.1)
+
+    system_prompt = (
+        "You are an expert Python Developer agent.\n"
+        "Write executable Python code to compute, verify, or solve the objective.\n"
+        "Always output executable code enclosed in a ```python ... ``` block.\n"
+        "Always print results clearly to stdout."
     )
 
-    code_prompt = (
+    context_prompt = (
         f"Goal: {state['user_goal']}\n"
         f"Data: {state.get('research_data', 'None')}\n\n"
-        "Write pure executable Python code to compute or verify the goal. "
-        "Print the results clearly. Output ONLY executable code in a markdown block."
+        "Write the Python script to calculate or verify this."
     )
-    code_response = llm.invoke([HumanMessage(content=code_prompt)])
+
+    code_response = llm.invoke([
+        SystemMessage(content=system_prompt),
+        HumanMessage(content=context_prompt)
+    ])
+
     execution_result = python_executor.invoke(code_response.content)
 
     return {
-        "code_output": execution_result,
+        "code_output": str(execution_result),
         "next_step": "supervisor"
     }

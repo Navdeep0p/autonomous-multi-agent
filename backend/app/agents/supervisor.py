@@ -1,48 +1,73 @@
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage, HumanMessage
 from pydantic import BaseModel, Field
 from typing import Literal
-from app.core.config import GEMINI_API_KEY, DEFAULT_MODEL, DEFAULT_TEMPERATURE
+from app.core.config import get_agent_llm
 from app.core.state import AgentState
 
 class RouterDecision(BaseModel):
-    next_node: Literal["researcher", "coder", "reviewer", "FINISH"] = Field(
-        description="The next specialized agent node to route the task to."
+    next_node: Literal["retriever", "researcher", "coder", "reviewer", "FINISH"] = Field(
+        description="The target node to route execution to."
     )
-    reasoning: str = Field(description="Brief explanation of why this node was selected.")
-    current_plan: list[str] = Field(description="The updated step-by-step execution plan.")
+    reasoning: str = Field(description="Explanation of the chosen route.")
+    current_plan: list[str] = Field(default_factory=list, description="Step-by-step execution plan.")
+
+SUPERVISOR_SYSTEM_PROMPT = """You are the Supervisor of an autonomous multi-agent system.
+Analyze the recent conversation history and current user goal to understand the TRUE intent.
+
+Follow-up Guidelines:
+- If the user provides a short or elliptical follow-up (e.g., previous prompt asked for a website link or calculation, and the new input is just a name like 'gemini?'), infer that the user wants the same task performed for the new entity.
+- If web links or real-time info are requested and not yet gathered, route to 'researcher'.
+- If the query is an isolated general concept or definition, route to 'reviewer' (Fast Path).
+- If internal documents are needed, route to 'retriever'.
+- If code execution or math is needed, route to 'coder'.
+"""
 
 def supervisor_node(state: AgentState) -> dict:
-    llm = ChatGoogleGenerativeAI(
-        model=DEFAULT_MODEL,
-        google_api_key=GEMINI_API_KEY,
-        temperature=DEFAULT_TEMPERATURE
-    ).with_structured_output(RouterDecision)
+    llm = get_agent_llm("supervisor", temperature=0.0)
+    structured_llm = llm.with_structured_output(RouterDecision)
 
-    system_prompt = (
-        "You are the Supervisor of an autonomous multi-agent engineering team.\n"
-        "Your job is to progress through the plan sequentially:\n"
-        "1. If web information/facts are needed and NOT yet collected, route to 'researcher'.\n"
-        "2. If calculations, scripts, or programmatic tasks are needed and NOT yet executed, route to 'coder'.\n"
-        "3. Once both research and code outputs are collected, route to 'reviewer'.\n"
-        "DO NOT repeat a node if its task is already done."
-    )
+    has_retrieved = state.get("retrieval_grade") is not None
+    has_research = bool(state.get("research_data"))
+    has_code = bool(state.get("code_output"))
+
+    # Extract recent conversation turns for context
+    messages = state.get("messages", [])
+    history_lines = []
+    for m in messages[-5:]:
+        role = "User" if m.type == "human" else "Assistant"
+        history_lines.append(f"{role}: {m.content}")
+    history_context = "\n".join(history_lines) if history_lines else "None"
 
     context = (
-        f"User Goal: {state['user_goal']}\n"
-        f"Current Plan: {state.get('plan', [])}\n"
-        f"Research Found: {state.get('research_data', 'None')}\n"
-        f"Code Output: {state.get('code_output', 'None')}\n"
+        f"Recent Conversation History:\n{history_context}\n\n"
+        f"Current User Goal: {state.get('user_goal', '')}\n"
+        f"Retrieval Grade: {state.get('retrieval_grade', 'Not Attempted')}\n"
+        f"Web Research: {'Present' if has_research else 'None'}\n"
+        f"Code Sandbox: {'Present' if has_code else 'None'}\n"
         f"Review Feedback: {state.get('review_feedback', 'None')}\n"
-        f"Iteration Count: {state.get('iteration_count', 0)}"
+        f"Iteration: {state.get('iteration_count', 0)}"
     )
 
-    decision: RouterDecision = llm.invoke([
-        SystemMessage(content=system_prompt),
-        HumanMessage(content=context)
-    ])
+    try:
+        decision: RouterDecision = structured_llm.invoke([
+            SystemMessage(content=SUPERVISOR_SYSTEM_PROMPT),
+            HumanMessage(content=context)
+        ])
+        next_step = decision.next_node
+        plan = decision.current_plan
+    except Exception:
+        next_step = "reviewer"
+        plan = state.get("plan", ["Direct evaluation"])
+
+    # Circuit breakers
+    if next_step == "retriever" and has_retrieved:
+        next_step = "researcher" if state.get("retrieval_grade") == "fallback_needed" else "reviewer"
+    elif next_step == "researcher" and has_research:
+        next_step = "reviewer"
+    elif next_step == "coder" and has_code:
+        next_step = "reviewer"
 
     return {
-        "next_step": decision.next_node,
-        "plan": decision.current_plan
+        "next_step": next_step,
+        "plan": plan
     }

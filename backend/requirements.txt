@@ -9,3 +9,5 @@ pydantic
 python-dotenv
 ddgs
 requests
+chromadb
+langchain-chroma
